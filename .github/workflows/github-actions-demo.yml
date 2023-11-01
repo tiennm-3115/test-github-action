@@ -1,19 +1,32 @@
-name: Zip Files
+name: Zip Files and Upload
 
-on:
-  release:
-    types: [published]
+on: [push]
 
 jobs:
-  zip-files:
+  build-and-zip:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - uses: vimtor/action-zip@v1.1
+
+      - name: Use Node.js
+        uses: actions/setup-node@v2
         with:
-          files: dist/ manifest.json
-          dest: result.zip
-      - uses: actions/upload-artifact@v1.1
+          node-version: '16'
+
+      - name: Install dependencies
+        run: yarn install
+
+      - name: Build
+        run: yarn build
+
+      - name: Zip dist directory
+        uses: vimtor/action-zip@v1.1
         with:
-          name: my-artifact
-          path: ${{ github.workspace }}/result.zip
+          files: dist/
+          dest: dist.zip
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: dist-artifact
+          path: ${{ github.workspace }}/dist.zip
